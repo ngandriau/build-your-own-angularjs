@@ -602,6 +602,34 @@ describe("Scope", function() {
       scope.$digest();
       expect(scope.counter).toBe(0);
     });
+
+    it('accepts expressions for watch functions', function() {
+      var theValue;
+      scope.$watch('42', function(newValue, oldValue, scope) {
+        theValue = newValue;
+      });
+      scope.$digest();
+  
+      expect(theValue).toBe(42);
+    });
+
+    it('accepts expressions for listener functions', function() {
+      scope.$watch('42', '"fourty-two"');
+      scope.$digest();
+    });
+
+    it('accepts expressions in $eval', function() {
+      expect(scope.$eval('42')).toBe(42);
+    });
+
+    it('accepts expressions in $apply', function() {
+      expect(scope.$apply('42')).toBe(42);
+    });
+
+    it('accepts expressions in $evalAsync', function(done) {
+      scope.$evalAsync('42');
+      scope.$$postDigest(done);
+    });
     
   });
 
@@ -1326,6 +1354,21 @@ describe("Scope", function() {
     });
 
     
+    it('accepts expressions for watch functions', function() {
+      var theValue;
+      scope.$watchCollection('42', function(newValue, oldValue, scope) {
+        theValue = newValue;
+      });
+      scope.$digest();
+      expect(theValue).toBe(42);
+    });
+
+    it('accepts expressions for listener functions', function() {
+      var theValue;
+      scope.$watchCollection('42', '"fourty-two"');
+      scope.$digest();
+    });
+
   });
 
   describe("Events", function() {

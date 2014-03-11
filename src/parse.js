@@ -183,9 +183,15 @@ Parser.prototype.primary = function() {
 };
 
 
-
-function parse(expr) {
-  var lexer = new Lexer();
-  var parser = new Parser(lexer);
-  return parser.parse(expr);
+function parse(exp) {
+  switch (typeof exp) {
+    case 'string':
+      var lexer = new Lexer();
+      var parser = new Parser(lexer);
+      return parser.parse(exp);
+    case 'function':
+      return exp;
+    default:
+      return _.noop;
+  }
 }
