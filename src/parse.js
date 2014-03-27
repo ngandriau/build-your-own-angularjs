@@ -73,6 +73,12 @@ Lexer.prototype.lex = function(text) {
       this.readNumber();
     } else if (this.ch === '\'' || this.ch === '"') {
       this.readString(this.ch);
+    } else if (this.ch === '[' || this.ch === ']') {
+      this.tokens.push({
+        text: this.ch,
+        json: false
+      });
+      this.index++;
     } else if (this.isIdent(this.ch)) {
       this.readIdent(this.ch);
     } else if (this.isWhitespace(this.ch)) {
@@ -221,15 +227,43 @@ Parser.prototype.parse = function(text) {
 };
 
 Parser.prototype.primary = function() {
-  var token = this.tokens[0];
+  var token = this.expect();
   var primary = token.fn;
   if (token.json) {
     primary.constant = true;
     primary.literal = true;
   }
+
+  while (this.expect('[')) {
+    primary = this.objectIndex(primary);
+  }
+
   return primary;
 };
 
+Parser.prototype.objectIndex = function(objFn) {
+  var indexFn = this.primary();
+  this.consume(']');
+  return function(scope, locals) {
+    var obj = objFn(scope, locals);
+    var index = indexFn(scope, locals);
+    return obj[index];
+  };
+};
+
+Parser.prototype.expect = function(e) {
+  if (this.tokens.length > 0) {
+    if (this.tokens[0].text === e || !e) {
+      return this.tokens.shift();
+    }
+  }
+};
+
+Parser.prototype.consume = function(e) {
+  if (!this.expect(e)) {
+    throw 'Unexpected. Expecting '+e;
+  }
+};
 
 function parse(exp) {
   switch (typeof exp) {
